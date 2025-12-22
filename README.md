@@ -160,8 +160,7 @@ Access the interactive Swagger API documentation at: `http://localhost:3000/api`
 
 **Description**: A simple e-commerce system with products, shopping cart, and orders. The backend provides RESTful APIs with full CRUD operations, stock validation, and price validation. The frontend displays products, allows adding to cart, and supports checkout functionality.
 
-**Author**: [Your Name]
-**Date**: December 22, 2025
+
 
 ## License
 
