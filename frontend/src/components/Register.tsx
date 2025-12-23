@@ -7,7 +7,6 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState<'user' | 'admin'>('user');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -19,7 +18,8 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      await register(email, password, name, role);
+      // Always register as 'user' role
+      await register(email, password, name, 'user');
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to register. Please try again.');
@@ -64,17 +64,6 @@ const Register: React.FC = () => {
             minLength={6}
             placeholder="Enter your password (min 6 characters)"
           />
-        </div>
-        <div className="form-group">
-          <label htmlFor="role">Account Type</label>
-          <select
-            id="role"
-            value={role}
-            onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
-          >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
         </div>
         {error && <div className="error-message">{error}</div>}
         <button type="submit" className="register-button" disabled={loading}>

@@ -1,0 +1,112 @@
+.admin-login-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.admin-login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.admin-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.admin-login-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: white;
+  font-size: 2em;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-login-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-login-form .form-group label {
+  font-weight: 500;
+  color: white;
+}
+
+.admin-login-form .form-group input {
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.admin-login-form .form-group input:focus {
+  outline: none;
+  border-color: white;
+  background: white;
+}
+
+.admin-login-form .error-message {
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  padding: 10px;
+  background: rgba(220, 53, 69, 0.8);
+  border-radius: 4px;
+}
+
+.admin-login-button {
+  padding: 12px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.admin-login-button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.admin-login-button:disabled {
+  background: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.user-login-link {
+  text-align: center;
+  margin-top: 20px;
+  color: white;
+}
+
+.user-login-link a {
+  color: white;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.user-login-link a:hover {
+  opacity: 0.8;
+}

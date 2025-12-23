@@ -47,39 +47,51 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
             </svg>
           </button>
         </form>
-
+        
         <nav className="nav">
-          <Link to="/" className="nav-link">Products</Link>
-          <Link to="/cart" className="nav-link cart-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            Cart
-          </Link>
-          {isAuthenticated ? (
+          {isAuthenticated && user?.role === 'admin' ? (
+            // Admin navigation
             <>
-              {user?.role === 'admin' ? (
-                <Link to="/admin/dashboard" className="nav-link dashboard-link">
-                  Admin Dashboard
-                </Link>
-              ) : (
-                <Link to="/user/dashboard" className="nav-link dashboard-link">
-                  My Dashboard
-                </Link>
-              )}
-              <span className="nav-link user-info">
-                {user?.name || user?.email} {user?.role === 'admin' && '(Admin)'}
-              </span>
+              <Link 
+                to="/admin/profile" 
+                className="nav-link user-info clickable"
+              >
+                {user?.name || user?.email} (Admin)
+              </Link>
               <button onClick={handleLogout} className="nav-link logout-button">
                 Logout
               </button>
             </>
           ) : (
+            // Regular user navigation
             <>
-              <Link to="/login" className="nav-link">Login</Link>
-              <Link to="/register" className="nav-link">Register</Link>
+              <Link to="/" className="nav-link">Products</Link>
+              <Link to="/cart" className="nav-link cart-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                Cart
+              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link 
+                    to="/user/dashboard" 
+                    className="nav-link user-info clickable"
+                  >
+                    {user?.name || user?.email}
+                  </Link>
+                  <button onClick={handleLogout} className="nav-link logout-button">
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="nav-link">Login</Link>
+                  <Link to="/register" className="nav-link">Register</Link>
+                </>
+              )}
             </>
           )}
         </nav>
