@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './Header.css';
 
 interface HeaderProps {
@@ -8,12 +9,19 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSearch) {
       onSearch(searchQuery);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -50,6 +58,21 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
             </svg>
             Cart
           </Link>
+          {isAuthenticated ? (
+            <>
+              <span className="nav-link user-info">
+                {user?.name || user?.email} {user?.role === 'admin' && '(Admin)'}
+              </span>
+              <button onClick={handleLogout} className="nav-link logout-button">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="nav-link">Login</Link>
+              <Link to="/register" className="nav-link">Register</Link>
+            </>
+          )}
         </nav>
       </div>
     </header>

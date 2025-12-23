@@ -52,6 +52,27 @@ const api = axios.create({
   },
 });
 
+// Add token to requests if available
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Auth API
+export const login = (email: string, password: string) =>
+  api.post('/auth/login', { email, password });
+export const register = (email: string, password: string, name?: string, role?: 'user' | 'admin') =>
+  api.post('/auth/register', { email, password, name, role });
+export const getProfile = () => api.get('/auth/profile');
+
 // Product API
 export const getProducts = () => api.get<Product[]>('/products');
 export const getProduct = (id: number) => api.get<Product>(`/products/${id}`);

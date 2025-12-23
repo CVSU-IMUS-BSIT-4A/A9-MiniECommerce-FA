@@ -130,6 +130,26 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+.user-info {
+  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: default;
+}
+
+.logout-button {
+  background: rgba(220, 53, 69, 0.8);
+  border: 1px solid rgba(220, 53, 69, 0.5);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1em;
+}
+
+.logout-button:hover {
+  background: rgba(220, 53, 69, 1);
+  border-color: rgba(220, 53, 69, 0.8);
+}
+
 @media (max-width: 968px) {
   .header-content {
     padding: 0 20px;
