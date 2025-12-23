@@ -14,6 +14,8 @@ import { ProductService } from './services/product.service';
 import { CartService } from './services/cart.service';
 import { OrderService } from './services/order.service';
 import { AuthModule } from './modules/auth.module';
+import { UserModule } from './modules/user/user.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { AuthModule } from './modules/auth.module';
     }),
     TypeOrmModule.forFeature([Product, CartItem, Order, OrderItem]),
     AuthModule,
+    UserModule,
+    AdminModule,
   ],
   controllers: [AppController, ProductController, CartController, OrderController],
   providers: [AppService, ProductService, CartService, OrderService],

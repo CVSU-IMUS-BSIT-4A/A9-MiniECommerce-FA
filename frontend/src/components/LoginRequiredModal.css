@@ -1,0 +1,138 @@
+.login-required-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.login-required-content {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.login-required-icon {
+  font-size: 4em;
+  margin-bottom: 20px;
+}
+
+.login-required-content h2 {
+  font-size: 1.8em;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.login-required-content p {
+  font-size: 1.1em;
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.login-required-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.login-button {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.login-button:hover {
+  background: linear-gradient(135deg, #0056b3, #003d82);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.register-button {
+  background: white;
+  color: #007bff;
+  border: 2px solid #007bff;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.register-button:hover {
+  background: #f0f8ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.cancel-button {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.cancel-button:hover {
+  background: #e9ecef;
+  border-color: #ccc;
+}
+
+@media (max-width: 500px) {
+  .login-required-buttons {
+    flex-direction: column;
+  }
+
+  .login-button,
+  .register-button {
+    width: 100%;
+  }
+}

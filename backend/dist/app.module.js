@@ -23,6 +23,8 @@ const product_service_1 = require("./services/product.service");
 const cart_service_1 = require("./services/cart.service");
 const order_service_1 = require("./services/order.service");
 const auth_module_1 = require("./modules/auth.module");
+const user_module_1 = require("./modules/user/user.module");
+const admin_module_1 = require("./modules/admin/admin.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -37,6 +39,8 @@ exports.AppModule = AppModule = __decorate([
             }),
             typeorm_1.TypeOrmModule.forFeature([product_entity_1.Product, cart_item_entity_1.CartItem, order_entity_1.Order, order_item_entity_1.OrderItem]),
             auth_module_1.AuthModule,
+            user_module_1.UserModule,
+            admin_module_1.AdminModule,
         ],
         controllers: [app_controller_1.AppController, product_controller_1.ProductController, cart_controller_1.CartController, order_controller_1.OrderController],
         providers: [app_service_1.AppService, product_service_1.ProductService, cart_service_1.CartService, order_service_1.OrderService],

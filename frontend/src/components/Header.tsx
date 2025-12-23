@@ -60,6 +60,15 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
           </Link>
           {isAuthenticated ? (
             <>
+              {user?.role === 'admin' ? (
+                <Link to="/admin/dashboard" className="nav-link dashboard-link">
+                  Admin Dashboard
+                </Link>
+              ) : (
+                <Link to="/user/dashboard" className="nav-link dashboard-link">
+                  My Dashboard
+                </Link>
+              )}
               <span className="nav-link user-info">
                 {user?.name || user?.email} {user?.role === 'admin' && '(Admin)'}
               </span>

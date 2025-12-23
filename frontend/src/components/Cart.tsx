@@ -1,17 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCart, updateCartItem, removeFromCart, clearCart, CartItem } from '../api';
+import { useAuth } from '../contexts/AuthContext';
+import LoginRequiredModal from './LoginRequiredModal';
 import './Cart.css';
 
 const Cart: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Show login modal if not authenticated
+    if (!isAuthenticated) {
+      setShowLoginRequired(true);
+      setLoading(false);
+      return;
+    }
     fetchCart();
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchCart = async () => {
     try {
@@ -22,6 +32,11 @@ const Cart: React.FC = () => {
       setError('Failed to load cart');
       setLoading(false);
     }
+  };
+
+  const handleCloseLoginRequired = () => {
+    setShowLoginRequired(false);
+    navigate('/'); // Redirect to home page
   };
 
   const handleQuantityChange = async (id: number, newQuantity: number) => {
@@ -71,73 +86,79 @@ const Cart: React.FC = () => {
   if (loading) return <div className="loading">Loading cart...</div>;
 
   return (
-    <div className="cart-container">
-      <h1>Shopping Cart</h1>
-      {error && <div className="error-message">{error}</div>}
+    <>
+      <div className={`cart-container ${!isAuthenticated ? 'blurred' : ''}`}>
+        <h1>Shopping Cart</h1>
+        {error && <div className="error-message">{error}</div>}
 
-      {cartItems.length === 0 ? (
-        <div className="empty-cart">
-          <p>Your cart is empty</p>
-          <button onClick={() => navigate('/')} className="continue-shopping-btn">
-            Continue Shopping
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="cart-items">
-            {cartItems.map((item) => (
-              <div key={item.id} className="cart-item">
-                <div className="cart-item-info">
-                  <h3>{item.productName}</h3>
-                  <p className="cart-item-price">₱{Number(item.price).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} each</p>
-                </div>
-                <div className="cart-item-actions">
-                  <div className="quantity-controls">
+        {cartItems.length === 0 ? (
+          <div className="empty-cart">
+            <p>Your cart is empty</p>
+            <button onClick={() => navigate('/')} className="continue-shopping-btn">
+              Continue Shopping
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="cart-items">
+              {cartItems.map((item) => (
+                <div key={item.id} className="cart-item">
+                  <div className="cart-item-info">
+                    <h3>{item.productName}</h3>
+                    <p className="cart-item-price">₱{Number(item.price).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} each</p>
+                  </div>
+                  <div className="cart-item-actions">
+                    <div className="quantity-controls">
+                      <button
+                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                        className="quantity-btn"
+                      >
+                        -
+                      </button>
+                      <span className="quantity">{item.quantity}</span>
+                      <button
+                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                        className="quantity-btn"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <div className="cart-item-total">
+                      ₱{(Number(item.price) * item.quantity).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
                     <button
-                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                      className="quantity-btn"
+                      onClick={() => handleRemove(item.id)}
+                      className="remove-btn"
                     >
-                      -
-                    </button>
-                    <span className="quantity">{item.quantity}</span>
-                    <button
-                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      className="quantity-btn"
-                    >
-                      +
+                      Remove
                     </button>
                   </div>
-                  <div className="cart-item-total">
-                    ₱{(Number(item.price) * item.quantity).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <button
-                    onClick={() => handleRemove(item.id)}
-                    className="remove-btn"
-                  >
-                    Remove
-                  </button>
                 </div>
+              ))}
+            </div>
+
+            <div className="cart-summary">
+              <div className="cart-total">
+                <span>Total Amount:</span>
+                <span className="total-amount">₱{calculateTotal().toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
-            ))}
-          </div>
+              <div className="cart-actions">
+                <button onClick={handleClearCart} className="clear-cart-btn">
+                  Clear Cart
+                </button>
+                <button onClick={handleCheckout} className="checkout-btn">
+                  Proceed to Checkout
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
-          <div className="cart-summary">
-            <div className="cart-total">
-              <span>Total Amount:</span>
-              <span className="total-amount">₱{calculateTotal().toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div className="cart-actions">
-              <button onClick={handleClearCart} className="clear-cart-btn">
-                Clear Cart
-              </button>
-              <button onClick={handleCheckout} className="checkout-btn">
-                Proceed to Checkout
-              </button>
-            </div>
-          </div>
-        </>
+      {showLoginRequired && (
+        <LoginRequiredModal onClose={handleCloseLoginRequired} />
       )}
-    </div>
+    </>
   );
 };
 

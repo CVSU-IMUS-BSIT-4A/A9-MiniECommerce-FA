@@ -104,5 +104,7 @@ export const createOrder = (data: {
 }) => api.post<Order>('/orders', data);
 export const getOrders = () => api.get<Order[]>('/orders');
 export const getOrder = (id: number) => api.get<Order>(`/orders/${id}`);
+export const updateOrderStatus = (id: number, status: string) => 
+  api.patch(`/orders/${id}`, { status });
 
 export default api;

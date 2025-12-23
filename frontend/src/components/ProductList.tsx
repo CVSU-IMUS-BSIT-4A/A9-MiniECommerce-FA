@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { getProducts, addToCart, Product } from '../api';
+import { useAuth } from '../contexts/AuthContext';
 import AddToCartModal from './AddToCartModal';
 import ConfirmationModal from './ConfirmationModal';
+import LoginRequiredModal from './LoginRequiredModal';
 import './ProductList.css';
 
 interface ProductListProps {
@@ -9,11 +11,13 @@ interface ProductListProps {
 }
 
 const ProductList: React.FC<ProductListProps> = ({ searchQuery = '' }) => {
+  const { isAuthenticated } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
   const [addedProductName, setAddedProductName] = useState('');
   const [addedQuantity, setAddedQuantity] = useState(0);
 
@@ -38,11 +42,20 @@ const ProductList: React.FC<ProductListProps> = ({ searchQuery = '' }) => {
   );
 
   const handleOpenModal = (product: Product) => {
+    // Check if user is logged in
+    if (!isAuthenticated) {
+      setShowLoginRequired(true);
+      return;
+    }
     setSelectedProduct(product);
   };
 
   const handleCloseModal = () => {
     setSelectedProduct(null);
+  };
+
+  const handleCloseLoginRequired = () => {
+    setShowLoginRequired(false);
   };
 
   const handleAddToCart = async (quantity: number) => {
@@ -127,6 +140,10 @@ const ProductList: React.FC<ProductListProps> = ({ searchQuery = '' }) => {
           onClose={handleCloseModal}
           onAdd={handleAddToCart}
         />
+      )}
+
+      {showLoginRequired && (
+        <LoginRequiredModal onClose={handleCloseLoginRequired} />
       )}
 
       {showConfirmation && (

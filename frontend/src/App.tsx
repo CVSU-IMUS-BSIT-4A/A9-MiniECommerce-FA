@@ -8,12 +8,29 @@ import Checkout from './components/Checkout';
 import OrderConfirmation from './components/OrderConfirmation';
 import Login from './components/Login';
 import Register from './components/Register';
+import UserDashboard from './pages/user/UserDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import './App.css';
 
 // Protected Route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+// Admin Route wrapper
+const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { isAuthenticated, isAdmin } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (!isAdmin) {
+    return <Navigate to="/user/dashboard" replace />;
+  }
+  
+  return children;
 };
 
 function AppContent() {
@@ -32,6 +49,22 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/" element={<ProductList searchQuery={searchQuery} />} />
           <Route path="/cart" element={<Cart />} />
+          <Route 
+            path="/user/dashboard" 
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            } 
+          />
           <Route 
             path="/checkout" 
             element={
