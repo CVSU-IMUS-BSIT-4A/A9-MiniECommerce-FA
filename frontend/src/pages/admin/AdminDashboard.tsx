@@ -33,10 +33,27 @@ const AdminDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders'>('overview');
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<number | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
+    imageUrl: ''
+  });
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Close modal when switching tabs
+  useEffect(() => {
+    setShowProductModal(false);
+    setShowDeleteModal(false);
+  }, [activeTab]);
 
   const fetchData = async () => {
     try {
@@ -67,6 +84,81 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error updating order status:', error);
       alert('Failed to update order status');
+    }
+  };
+
+  const handleAddProduct = () => {
+    setEditingProduct(null);
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      stock: '',
+      imageUrl: ''
+    });
+    setShowProductModal(true);
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price.toString(),
+      stock: product.stock.toString(),
+      imageUrl: product.imageUrl || ''
+    });
+    setShowProductModal(true);
+  };
+
+  const handleDeleteProduct = async (productId: number) => {
+    setProductToDelete(productId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+
+    try {
+      await api.deleteProduct(productToDelete);
+      setProducts(products.filter(p => p.id !== productToDelete));
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+      alert('Product deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Failed to delete product');
+    }
+  };
+
+  const handleSubmitProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const productData = {
+      name: formData.name,
+      description: formData.description,
+      price: parseFloat(formData.price),
+      stock: parseInt(formData.stock),
+      imageUrl: formData.imageUrl
+    };
+
+    try {
+      if (editingProduct) {
+        // Update existing product
+        const response = await api.updateProduct(editingProduct.id, productData);
+        setProducts(products.map(p => p.id === editingProduct.id ? response.data : p));
+        alert('Product updated successfully!');
+      } else {
+        // Create new product
+        const response = await api.createProduct(productData);
+        setProducts([...products, response.data]);
+        alert('Product added successfully!');
+      }
+      setShowProductModal(false);
+      setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '' });
+    } catch (error) {
+      console.error('Error saving product:', error);
+      alert('Failed to save product');
     }
   };
 
@@ -142,7 +234,12 @@ const AdminDashboard: React.FC = () => {
 
         {activeTab === 'products' && (
           <div className="products-section">
-            <h2>Product Management</h2>
+            <div className="section-header">
+              <h2>Product Management</h2>
+              <button className="add-product-btn" onClick={handleAddProduct}>
+                + Add New Product
+              </button>
+            </div>
             <div className="products-table">
               <table>
                 <thead>
@@ -152,6 +249,7 @@ const AdminDashboard: React.FC = () => {
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -165,6 +263,22 @@ const AdminDashboard: React.FC = () => {
                         <span className={`status ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}`}>
                           {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                         </span>
+                      </td>
+                      <td>
+                        <div className="action-buttons">
+                          <button 
+                            className="edit-btn"
+                            onClick={() => handleEditProduct(product)}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="delete-btn"
+                            onClick={() => handleDeleteProduct(product.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -223,6 +337,111 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Product Modal */}
+      {showProductModal && (
+        <div className="modal-overlay" onClick={() => setShowProductModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
+              <button className="close-btn" onClick={() => setShowProductModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleSubmitProduct} className="product-form">
+              <div className="form-group">
+                <label>Product Name *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                  placeholder="Enter product name"
+                />
+              </div>
+              <div className="form-group">
+                <label>Description *</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  required
+                  placeholder="Enter product description"
+                  rows={4}
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Price (₱) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    required
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Stock *</label>
+                  <input
+                    type="number"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                    required
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Image URL</label>
+                <input
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="cancel-btn" onClick={() => setShowProductModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="submit-btn">
+                  {editingProduct ? 'Update Product' : 'Add Product'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirm Delete</h2>
+              <button className="close-btn" onClick={() => setShowDeleteModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button 
+                type="button" 
+                className="cancel-btn" 
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="delete-confirm-btn"
+                onClick={confirmDelete}
+              >
+                Delete Product
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
