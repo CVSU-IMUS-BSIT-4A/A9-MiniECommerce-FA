@@ -35,6 +35,8 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders'>('overview');
   const [showProductModal, setShowProductModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
@@ -53,6 +55,7 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     setShowProductModal(false);
     setShowDeleteModal(false);
+    setShowOrderModal(false);
   }, [activeTab]);
 
   const fetchData = async () => {
@@ -129,6 +132,11 @@ const AdminDashboard: React.FC = () => {
       console.error('Error deleting product:', error);
       alert('Failed to delete product');
     }
+  };
+
+  const handleViewOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setShowOrderModal(true);
   };
 
   const handleSubmitProduct = async (e: React.FormEvent) => {
@@ -318,16 +326,12 @@ const AdminDashboard: React.FC = () => {
                       </td>
                       <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                       <td>
-                        <select 
-                          value={order.status} 
-                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="status-select"
+                        <button 
+                          className="view-btn"
+                          onClick={() => handleViewOrder(order)}
                         >
-                          <option value="pending">Pending</option>
-                          <option value="processing">Processing</option>
-                          <option value="completed">Completed</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
+                          View
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -437,6 +441,108 @@ const AdminDashboard: React.FC = () => {
                 onClick={confirmDelete}
               >
                 Delete Product
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {showOrderModal && selectedOrder && (
+        <div className="modal-overlay" onClick={() => setShowOrderModal(false)}>
+          <div className="modal-content order-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Order Details - #{selectedOrder.id}</h2>
+              <button className="close-btn" onClick={() => setShowOrderModal(false)}>×</button>
+            </div>
+            <div className="order-details-body">
+              <div className="order-info-section">
+                <h3>Customer Information</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Name:</span>
+                    <span className="info-value">{selectedOrder.customerName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Email:</span>
+                    <span className="info-value">{selectedOrder.customerEmail}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Order Date:</span>
+                    <span className="info-value">{new Date(selectedOrder.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Status:</span>
+                    <span className={`order-status status-${selectedOrder.status.toLowerCase()}`}>
+                      {selectedOrder.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="order-items-section">
+                <h3>Order Items</h3>
+                <table className="items-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Price</th>
+                      <th>Quantity</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedOrder.items.map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.productName}</td>
+                        <td>₱{item.price.toFixed(2)}</td>
+                        <td>{item.quantity}</td>
+                        <td>₱{(item.price * item.quantity).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="order-summary">
+                <div className="summary-row">
+                  <span className="summary-label">Total Amount:</span>
+                  <span className="summary-value">₱{selectedOrder.totalAmount.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <div className="order-status-section">
+                <h3>Update Order Status</h3>
+                {selectedOrder.status.toLowerCase() === 'completed' ? (
+                  <div className="status-completed-message">
+                    <span className="order-status status-completed">COMPLETED</span>
+                    <p>This order has been completed and can no longer be modified.</p>
+                  </div>
+                ) : (
+                  <select 
+                    value={selectedOrder.status} 
+                    onChange={(e) => {
+                      updateOrderStatus(selectedOrder.id, e.target.value);
+                      setSelectedOrder({...selectedOrder, status: e.target.value});
+                    }}
+                    className="status-select-large"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="receiving">Receiving</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                )}
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button 
+                type="button" 
+                className="cancel-btn" 
+                onClick={() => setShowOrderModal(false)}
+              >
+                Close
               </button>
             </div>
           </div>

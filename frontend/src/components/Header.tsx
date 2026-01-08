@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getOrders } from '../api';
 import './Header.css';
 
 interface HeaderProps {
@@ -9,8 +10,30 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [receivingOrdersCount, setReceivingOrdersCount] = useState(0);
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchReceivingOrders = async () => {
+      if (isAuthenticated && user?.role !== 'admin') {
+        try {
+          const response = await getOrders();
+          const userOrders = response.data.filter(
+            (order: any) => order.customerEmail === user?.email && order.status.toLowerCase() === 'receiving'
+          );
+          setReceivingOrdersCount(userOrders.length);
+        } catch (error) {
+          console.error('Error fetching orders:', error);
+        }
+      }
+    };
+
+    fetchReceivingOrders();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchReceivingOrders, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +104,9 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
                     className="nav-link user-info clickable"
                   >
                     {user?.name || user?.email}
+                    {receivingOrdersCount > 0 && (
+                      <span className="notification-badge">{receivingOrdersCount}</span>
+                    )}
                   </Link>
                   <button onClick={handleLogout} className="nav-link logout-button">
                     Logout

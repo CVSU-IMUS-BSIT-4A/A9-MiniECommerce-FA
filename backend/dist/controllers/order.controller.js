@@ -34,6 +34,9 @@ let OrderController = class OrderController {
     updateStatus(id, status) {
         return this.orderService.updateStatus(+id, status);
     }
+    receiveOrder(id) {
+        return this.orderService.updateStatus(+id, 'completed');
+    }
 };
 exports.OrderController = OrderController;
 __decorate([
@@ -76,6 +79,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], OrderController.prototype, "updateStatus", null);
+__decorate([
+    (0, common_1.Patch)(':id/receive'),
+    (0, swagger_1.ApiOperation)({ summary: 'Mark order as received by user' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Order marked as received and completed' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Order not found' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], OrderController.prototype, "receiveOrder", null);
 exports.OrderController = OrderController = __decorate([
     (0, swagger_1.ApiTags)('orders'),
     (0, common_1.Controller)('orders'),

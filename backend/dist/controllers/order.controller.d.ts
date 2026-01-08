@@ -7,4 +7,5 @@ export declare class OrderController {
     findAll(): Promise<import("../entities/order.entity").Order[]>;
     findOne(id: string): Promise<import("../entities/order.entity").Order>;
     updateStatus(id: string, status: string): Promise<import("../entities/order.entity").Order>;
+    receiveOrder(id: string): Promise<import("../entities/order.entity").Order>;
 }

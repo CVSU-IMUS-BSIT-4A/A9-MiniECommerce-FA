@@ -22,6 +22,7 @@ const UserDashboard: React.FC = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -39,6 +40,20 @@ const UserDashboard: React.FC = () => {
       console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReceiveOrder = async (orderId: number) => {
+    try {
+      await api.receiveOrder(orderId);
+      // Update the order status locally
+      setOrders(orders.map(order => 
+        order.id === orderId ? { ...order, status: 'completed' } : order
+      ));
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Error receiving order:', error);
+      alert('Failed to receive order');
     }
   };
 
@@ -100,12 +115,39 @@ const UserDashboard: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                  {order.status.toLowerCase() === 'receiving' && (
+                    <button 
+                      className="receive-order-btn"
+                      onClick={() => handleReceiveOrder(order.id)}
+                    >
+                      Order Received
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="modal-content success-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="success-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <h2>Order Received Successfully!</h2>
+            <p>Thank you for confirming your order receipt. Your order is now complete.</p>
+            <button className="ok-btn" onClick={() => setShowSuccessModal(false)}>
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

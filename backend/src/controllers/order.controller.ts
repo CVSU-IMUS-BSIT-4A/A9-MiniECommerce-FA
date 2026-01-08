@@ -39,4 +39,12 @@ export class OrderController {
   updateStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.orderService.updateStatus(+id, status);
   }
+
+  @Patch(':id/receive')
+  @ApiOperation({ summary: 'Mark order as received by user' })
+  @ApiResponse({ status: 200, description: 'Order marked as received and completed' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  receiveOrder(@Param('id') id: string) {
+    return this.orderService.updateStatus(+id, 'completed');
+  }
 }
