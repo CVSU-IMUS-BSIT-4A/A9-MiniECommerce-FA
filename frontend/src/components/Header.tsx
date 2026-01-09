@@ -22,7 +22,13 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
           const userOrders = response.data.filter(
             (order: any) => order.customerEmail === user?.email && order.status.toLowerCase() === 'receiving'
           );
-          setReceivingOrdersCount(userOrders.length);
+          
+          // Check if user has viewed orders recently (within last 5 seconds)
+          const lastViewed = localStorage.getItem('lastViewedOrders');
+          const shouldShowBadge = !lastViewed || 
+            (new Date().getTime() - new Date(lastViewed).getTime() > 5000);
+          
+          setReceivingOrdersCount(shouldShowBadge ? userOrders.length : 0);
         } catch (error) {
           console.error('Error fetching orders:', error);
         }

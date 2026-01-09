@@ -46,6 +46,8 @@ const AdminDashboard: React.FC = () => {
     stock: '',
     imageUrl: ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   useEffect(() => {
     fetchData();
@@ -90,6 +92,21 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setImagePreview(base64String);
+        setFormData({...formData, imageUrl: base64String});
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddProduct = () => {
     setEditingProduct(null);
     setFormData({
@@ -99,6 +116,8 @@ const AdminDashboard: React.FC = () => {
       stock: '',
       imageUrl: ''
     });
+    setImageFile(null);
+    setImagePreview('');
     setShowProductModal(true);
   };
 
@@ -111,6 +130,8 @@ const AdminDashboard: React.FC = () => {
       stock: product.stock.toString(),
       imageUrl: product.imageUrl || ''
     });
+    setImageFile(null);
+    setImagePreview(product.imageUrl || '');
     setShowProductModal(true);
   };
 
@@ -164,6 +185,8 @@ const AdminDashboard: React.FC = () => {
       }
       setShowProductModal(false);
       setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '' });
+      setImageFile(null);
+      setImagePreview('');
     } catch (error) {
       console.error('Error saving product:', error);
       alert('Failed to save product');
@@ -350,6 +373,7 @@ const AdminDashboard: React.FC = () => {
               <h2>{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
               <button className="close-btn" onClick={() => setShowProductModal(false)}>×</button>
             </div>
+            <hr className="modal-divider" />
             <form onSubmit={handleSubmitProduct} className="product-form">
               <div className="form-group">
                 <label>Product Name *</label>
@@ -395,13 +419,18 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="form-group">
-                <label>Image URL</label>
+                <label>Product Image</label>
                 <input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="file-input"
                 />
+                {imagePreview && (
+                  <div className="image-preview">
+                    <img src={imagePreview} alt="Preview" />
+                  </div>
+                )}
               </div>
               <div className="modal-actions">
                 <button type="button" className="cancel-btn" onClick={() => setShowProductModal(false)}>

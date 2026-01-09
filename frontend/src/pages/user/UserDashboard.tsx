@@ -26,16 +26,33 @@ const UserDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+    // Mark orders as viewed when user visits dashboard
+    markOrdersAsViewed();
+    // Refresh orders every 10 seconds to get latest status
+    const interval = setInterval(fetchOrders, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const markOrdersAsViewed = () => {
+    // Store viewed timestamp in localStorage to clear notification
+    localStorage.setItem('lastViewedOrders', new Date().toISOString());
+  };
 
   const fetchOrders = async () => {
     try {
       const response = await api.getOrders();
+      console.log('All orders from API:', response.data);
       // Filter orders by user email
       const userOrders = response.data.filter(
         (order: Order) => order.customerEmail === user?.email
       );
-      setOrders(userOrders);
+      // Sort by createdAt ascending (oldest first)
+      const sortedOrders = userOrders.sort((a: Order, b: Order) => 
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+      console.log('Filtered user orders:', sortedOrders);
+      console.log('User email:', user?.email);
+      setOrders(sortedOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
@@ -89,10 +106,10 @@ const UserDashboard: React.FC = () => {
             <p className="no-orders">You haven't placed any orders yet.</p>
           ) : (
             <div className="orders-list">
-              {orders.map((order) => (
+              {orders.map((order, index) => (
                 <div key={order.id} className="order-card">
                   <div className="order-header">
-                    <span className="order-id">Order #{order.id}</span>
+                    <span className="order-id">Order #{index + 1}</span>
                     <span className={`order-status status-${order.status.toLowerCase()}`}>
                       {order.status}
                     </span>
