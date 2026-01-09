@@ -23,6 +23,10 @@ const UserDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState<number | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [otherReason, setOtherReason] = useState('');
 
   useEffect(() => {
     fetchOrders();
@@ -71,6 +75,37 @@ const UserDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error receiving order:', error);
       alert('Failed to receive order');
+    }
+  };
+
+  const handleCancelClick = (orderId: number) => {
+    setOrderToCancel(orderId);
+    setCancelReason('');
+    setOtherReason('');
+    setShowCancelModal(true);
+  };
+
+  const handleCancelOrder = async () => {
+    if (!orderToCancel) return;
+    
+    const reason = cancelReason === 'Other' ? otherReason : cancelReason;
+    if (!reason) {
+      alert('Please select or enter a cancellation reason');
+      return;
+    }
+
+    try {
+      await api.updateOrderStatus(orderToCancel, 'cancelled');
+      setOrders(orders.map(order => 
+        order.id === orderToCancel ? { ...order, status: 'cancelled' } : order
+      ));
+      setShowCancelModal(false);
+      setOrderToCancel(null);
+      setCancelReason('');
+      setOtherReason('');
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert('Failed to cancel order');
     }
   };
 
@@ -140,6 +175,14 @@ const UserDashboard: React.FC = () => {
                       Order Received
                     </button>
                   )}
+                  {(order.status.toLowerCase() === 'pending' || order.status.toLowerCase() === 'processing') && (
+                    <button 
+                      className="cancel-order-btn"
+                      onClick={() => handleCancelClick(order.id)}
+                    >
+                      Cancel Order
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -162,6 +205,92 @@ const UserDashboard: React.FC = () => {
             <button className="ok-btn" onClick={() => setShowSuccessModal(false)}>
               OK
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Order Modal */}
+      {showCancelModal && (
+        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
+          <div className="modal-content cancel-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Cancel Order</h2>
+              <button className="close-btn" onClick={() => setShowCancelModal(false)}>×</button>
+            </div>
+            <hr className="modal-divider" />
+            <div className="modal-body">
+              <p className="cancel-message">Please select a reason for cancelling this order:</p>
+              <div className="cancel-reasons">
+                <label className="reason-option">
+                  <input
+                    type="radio"
+                    name="cancelReason"
+                    value="Changed my mind"
+                    checked={cancelReason === 'Changed my mind'}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                  />
+                  <span>Changed my mind</span>
+                </label>
+                <label className="reason-option">
+                  <input
+                    type="radio"
+                    name="cancelReason"
+                    value="Found a better price"
+                    checked={cancelReason === 'Found a better price'}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                  />
+                  <span>Found a better price</span>
+                </label>
+                <label className="reason-option">
+                  <input
+                    type="radio"
+                    name="cancelReason"
+                    value="Ordered by mistake"
+                    checked={cancelReason === 'Ordered by mistake'}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                  />
+                  <span>Ordered by mistake</span>
+                </label>
+                <label className="reason-option">
+                  <input
+                    type="radio"
+                    name="cancelReason"
+                    value="Delivery time too long"
+                    checked={cancelReason === 'Delivery time too long'}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                  />
+                  <span>Delivery time too long</span>
+                </label>
+                <label className="reason-option">
+                  <input
+                    type="radio"
+                    name="cancelReason"
+                    value="Other"
+                    checked={cancelReason === 'Other'}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                  />
+                  <span>Other</span>
+                </label>
+                {cancelReason === 'Other' && (
+                  <div className="other-reason-input">
+                    <textarea
+                      placeholder="Please specify your reason..."
+                      value={otherReason}
+                      onChange={(e) => setOtherReason(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="cancel-btn" onClick={() => setShowCancelModal(false)}>
+                Back
+              </button>
+              <button className="confirm-cancel-btn" onClick={handleCancelOrder}>
+                Confirm Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -16,13 +16,22 @@ import './App.css';
 
 // Protected Route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
+  
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 // Admin Route wrapper
 const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -36,9 +45,8 @@ const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) =>
 };
 
 // Home Route - redirects admin to dashboard
-const HomeRoute: React.FC = () => {
+const HomeRoute: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
   const { isAuthenticated, isAdmin } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Redirect admin to dashboard
   if (isAuthenticated && isAdmin) {
@@ -63,7 +71,7 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<HomeRoute />} />
+          <Route path="/" element={<HomeRoute searchQuery={searchQuery} />} />
           <Route path="/cart" element={<Cart />} />
           <Route 
             path="/user/dashboard" 

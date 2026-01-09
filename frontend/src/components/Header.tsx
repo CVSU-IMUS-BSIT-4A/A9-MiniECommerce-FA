@@ -53,6 +53,13 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
     navigate('/login');
   };
 
+  const handleProductsClick = () => {
+    setSearchQuery('');
+    if (onSearch) {
+      onSearch('');
+    }
+  };
+
   return (
     <header className="header">
       <div className="header-content">
@@ -61,21 +68,24 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
           <span className="logo-text">TechHub PH</span>
         </Link>
         
-        <form className="search-bar" onSubmit={handleSearch}>
-          <input
-            type="text"
-            placeholder="Search for products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          <button type="submit" className="search-button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-          </button>
-        </form>
+        {/* Only show search bar for non-admin users */}
+        {user?.role !== 'admin' && (
+          <form className="search-bar" onSubmit={handleSearch}>
+            <input
+              type="text"
+              placeholder="Search for products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+            <button type="submit" className="search-button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </button>
+          </form>
+        )}
         
         <nav className="nav">
           {isAuthenticated && user?.role === 'admin' ? (
@@ -94,7 +104,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
           ) : (
             // Regular user navigation
             <>
-              <Link to="/" className="nav-link">Products</Link>
+              <Link to="/" className="nav-link" onClick={handleProductsClick}>Products</Link>
               <Link to="/cart" className="nav-link cart-link">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="9" cy="21" r="1"></circle>

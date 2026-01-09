@@ -48,6 +48,8 @@ const AdminDashboard: React.FC = () => {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -148,7 +150,8 @@ const AdminDashboard: React.FC = () => {
       setProducts(products.filter(p => p.id !== productToDelete));
       setShowDeleteModal(false);
       setProductToDelete(null);
-      alert('Product deleted successfully!');
+      setSuccessMessage('Product deleted successfully!');
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Error deleting product:', error);
       alert('Failed to delete product');
@@ -176,12 +179,14 @@ const AdminDashboard: React.FC = () => {
         // Update existing product
         const response = await api.updateProduct(editingProduct.id, productData);
         setProducts(products.map(p => p.id === editingProduct.id ? response.data : p));
-        alert('Product updated successfully!');
+        setSuccessMessage('Product updated successfully!');
+        setShowSuccessModal(true);
       } else {
         // Create new product
         const response = await api.createProduct(productData);
         setProducts([...products, response.data]);
-        alert('Product added successfully!');
+        setSuccessMessage('Product added successfully!');
+        setShowSuccessModal(true);
       }
       setShowProductModal(false);
       setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '' });
@@ -574,6 +579,25 @@ const AdminDashboard: React.FC = () => {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay success-modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="success-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <h2>Success!</h2>
+            <p>{successMessage}</p>
+            <button className="success-ok-btn" onClick={() => setShowSuccessModal(false)}>
+              OK
+            </button>
           </div>
         </div>
       )}

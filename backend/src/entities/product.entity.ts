@@ -17,7 +17,7 @@ export class Product {
   @Column('int')
   stock: number;
 
-  @Column({ nullable: true })
+  @Column('text', { nullable: true })
   imageUrl: string;
 
   @CreateDateColumn()
