@@ -9,7 +9,8 @@ const Register: React.FC = () => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const { registerWithoutLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,14 +19,19 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      // Always register as 'user' role
-      await register(email, password, name, 'user');
-      navigate('/');
+      // Register without auto-login
+      await registerWithoutLogin(email, password, name, 'user');
+      setShowSuccessModal(true);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to register. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    navigate('/login');
   };
 
   return (
@@ -73,6 +79,25 @@ const Register: React.FC = () => {
       <div className="login-link">
         Already have an account? <Link to="/login">Login here</Link>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="success-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <h2>Registration Successful!</h2>
+            <p>Your account has been created successfully. Please login to continue.</p>
+            <button className="success-ok-btn" onClick={handleCloseModal}>
+              Go to Login
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

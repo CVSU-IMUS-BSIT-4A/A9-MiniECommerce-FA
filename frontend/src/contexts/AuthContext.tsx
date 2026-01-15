@@ -13,6 +13,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string, role?: 'user' | 'admin') => Promise<void>;
+  registerWithoutLogin: (email: string, password: string, name?: string, role?: 'user' | 'admin') => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -58,6 +59,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  const registerWithoutLogin = async (email: string, password: string, name?: string, role?: 'user' | 'admin') => {
+    await api.register(email, password, name, role);
+    // Don't set token or user - just register the account
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -72,6 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         login,
         register,
+        registerWithoutLogin,
         logout,
         isAuthenticated: !!token,
         isAdmin: user?.role === 'admin',
