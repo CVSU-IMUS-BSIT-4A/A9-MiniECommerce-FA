@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const auth_service_1 = require("../services/auth.service");
 const auth_dto_1 = require("../dto/auth.dto");
 const jwt_auth_guard_1 = require("../guards/jwt-auth.guard");
@@ -35,6 +36,43 @@ let AuthController = class AuthController {
 exports.AuthController = AuthController;
 __decorate([
     (0, common_1.Post)('register'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Register a new user account',
+        description: 'Creates a new user account in the system. The user can register as either a regular user (customer) or admin. Password will be hashed before storage.'
+    }),
+    (0, swagger_1.ApiBody)({
+        description: 'User registration details',
+        schema: {
+            type: 'object',
+            properties: {
+                email: { type: 'string', example: 'user@example.com', description: 'User email address' },
+                password: { type: 'string', example: 'password123', description: 'User password (min 6 characters)' },
+                name: { type: 'string', example: 'John Doe', description: 'User full name (optional)' },
+                role: { type: 'string', enum: ['user', 'admin'], example: 'user', description: 'User role (default: user)' }
+            },
+            required: ['email', 'password']
+        }
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'User registered successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                access_token: { type: 'string', description: 'JWT authentication token' },
+                user: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'number' },
+                        email: { type: 'string' },
+                        name: { type: 'string' },
+                        role: { type: 'string' }
+                    }
+                }
+            }
+        }
+    }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid input or email already exists' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [auth_dto_1.RegisterDto]),
@@ -42,6 +80,41 @@ __decorate([
 ], AuthController.prototype, "register", null);
 __decorate([
     (0, common_1.Post)('login'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Login to user account',
+        description: 'Authenticates a user with email and password. Returns a JWT token for accessing protected routes.'
+    }),
+    (0, swagger_1.ApiBody)({
+        description: 'User login credentials',
+        schema: {
+            type: 'object',
+            properties: {
+                email: { type: 'string', example: 'user@example.com', description: 'User email address' },
+                password: { type: 'string', example: 'password123', description: 'User password' }
+            },
+            required: ['email', 'password']
+        }
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Login successful',
+        schema: {
+            type: 'object',
+            properties: {
+                access_token: { type: 'string', description: 'JWT authentication token' },
+                user: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'number' },
+                        email: { type: 'string' },
+                        name: { type: 'string' },
+                        role: { type: 'string' }
+                    }
+                }
+            }
+        }
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Invalid credentials' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [auth_dto_1.LoginDto]),
@@ -50,12 +123,34 @@ __decorate([
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('profile'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get current user profile',
+        description: 'Retrieves the profile information of the currently authenticated user. Requires valid JWT token.'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'User profile retrieved successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                id: { type: 'number' },
+                email: { type: 'string' },
+                name: { type: 'string' },
+                role: { type: 'string' },
+                createdAt: { type: 'string', format: 'date-time' },
+                updatedAt: { type: 'string', format: 'date-time' }
+            }
+        }
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized - Invalid or missing token' }),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
 exports.AuthController = AuthController = __decorate([
+    (0, swagger_1.ApiTags)('Authentication'),
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
 ], AuthController);

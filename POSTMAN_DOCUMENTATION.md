@@ -1,7 +1,7 @@
 # TechHub E-Commerce API - Postman Documentation
 
 ## 📋 Overview
-Complete API testing documentation for the TechHub E-Commerce platform using Postman.
+Complete API testing documentation for the TechHub E-Commerce platform using Postman. Updated with all available endpoints including Admin and User features.
 
 ## 🔧 Setup Instructions
 
@@ -13,10 +13,13 @@ Complete API testing documentation for the TechHub E-Commerce platform using Pos
 
 ### 2. Configure Variables
 The collection uses the following variables:
-- `baseUrl`: http://localhost:3001 (Backend API URL)
+- `baseUrl`: http://localhost:3000 (Backend API URL)
 - `token`: Auto-populated after login
+- `userId`: Auto-populated from user responses
 - `productId`: Auto-populated from product responses
 - `orderId`: Auto-populated from order responses
+- `cartItemId`: Auto-populated from cart responses
+- `sessionId`: Session identifier for cart (default: session-123-abc)
 
 ### 3. Start the Backend
 ```bash
@@ -26,7 +29,51 @@ npm run start:dev
 
 ---
 
-## 📊 API Endpoints Documentation
+## 📊 Complete API Endpoints Summary
+
+### 🔐 AUTHENTICATION (4 endpoints)
+1. **POST** `/auth/register` - Register new user
+2. **POST** `/auth/login` - Login user/admin
+3. **GET** `/auth/profile` - Get authenticated user profile (requires token)
+
+### 📦 PRODUCTS (5 endpoints)
+4. **GET** `/products` - Get all products (public)
+5. **GET** `/products/:id` - Get product by ID (public)
+6. **POST** `/products` - Create product (admin only, requires token)
+7. **PATCH** `/products/:id` - Update product (admin only, requires token)
+8. **DELETE** `/products/:id` - Delete product (admin only, requires token)
+
+### 🛒 CART (6 endpoints)
+9. **POST** `/cart` - Add item to cart
+10. **GET** `/cart?sessionId=xxx` - Get cart items by session
+11. **GET** `/cart/total?sessionId=xxx` - Get cart total amount
+12. **PATCH** `/cart/:id` - Update cart item quantity
+13. **DELETE** `/cart/:id` - Remove single cart item
+14. **DELETE** `/cart?sessionId=xxx` - Clear entire cart
+
+### 📋 ORDERS (5 endpoints)
+15. **POST** `/orders` - Create order (checkout)
+16. **GET** `/orders` - Get all orders
+17. **GET** `/orders/:id` - Get order by ID
+18. **PATCH** `/orders/:id/status` - Update order status (admin)
+19. **PATCH** `/orders/:id/receive` - Mark order as received (user)
+
+### 👑 ADMIN (4 endpoints - requires admin token)
+20. **GET** `/admin/dashboard/stats` - Get dashboard statistics
+21. **GET** `/admin/users` - Get all users
+22. **GET** `/admin/orders` - Get all orders
+23. **PATCH** `/admin/orders/:id/status` - Update order status
+
+### 👤 USER (3 endpoints - requires user token)
+24. **GET** `/user/profile` - Get user profile
+25. **GET** `/user/orders` - Get user's orders
+26. **PATCH** `/user/profile` - Update user profile
+
+**Total: 27 API Endpoints**
+
+---
+
+## 📊 Detailed API Endpoints Documentation
 
 ### 🔐 AUTHENTICATION
 
@@ -526,6 +573,271 @@ npm run start:dev
 
 ---
 
+### 🛒 CART (Additional Endpoints)
+
+#### 3. Get Cart Total
+- **Method:** GET
+- **Endpoint:** `/cart/total?sessionId={{sessionId}}`
+- **Authorization:** None
+- **Query Params:**
+  - sessionId: Session identifier (optional)
+
+**Expected Response:**
+```json
+{
+    "total": 2599.98
+}
+```
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Total is a number
+- ✅ Logs cart total
+
+---
+
+#### 4. Update Cart Item Quantity
+- **Method:** PATCH
+- **Endpoint:** `/cart/:id`
+- **Headers:** 
+  - Content-Type: application/json
+
+**Request Body:**
+```json
+{
+    "quantity": 5
+}
+```
+
+**Expected Response:**
+- **Response Code:** 200 OK
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Quantity updated
+
+---
+
+#### 5. Remove Cart Item
+- **Method:** DELETE
+- **Endpoint:** `/cart/:id`
+- **Params:**
+  - id: Cart item ID ({{cartItemId}})
+
+**Expected Response:**
+```json
+{
+    "message": "Cart item removed successfully"
+}
+```
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Message exists
+
+---
+
+#### 6. Clear Entire Cart
+- **Method:** DELETE
+- **Endpoint:** `/cart?sessionId={{sessionId}}`
+- **Query Params:**
+  - sessionId: Session identifier
+
+**Expected Response:**
+```json
+{
+    "message": "Cart cleared successfully"
+}
+```
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Cart cleared message
+
+---
+
+### 👑 ADMIN ENDPOINTS
+
+#### 1. Get Dashboard Statistics
+- **Method:** GET
+- **Endpoint:** `/admin/dashboard/stats`
+- **Authorization:** Bearer Token (Admin role required)
+
+**Expected Response:**
+- **Response Code:** 200 OK
+
+**Response Body Example:**
+```json
+{
+    "totalUsers": 15,
+    "totalOrders": 42,
+    "totalRevenue": 125000.50,
+    "pendingOrders": 8
+}
+```
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Has dashboard statistics
+- ✅ Logs statistics
+
+---
+
+#### 2. Get All Users (Admin)
+- **Method:** GET
+- **Endpoint:** `/admin/users`
+- **Authorization:** Bearer Token (Admin role required)
+
+**Expected Response:**
+- **Response Code:** 200 OK
+
+**Response Body Example:**
+```json
+[
+    {
+        "id": 1,
+        "email": "user@techhub.com",
+        "name": "John Doe",
+        "role": "user",
+        "createdAt": "2026-01-15T00:00:00.000Z"
+    }
+]
+```
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Users array returned
+- ✅ Logs total users count
+
+---
+
+#### 3. Get All Orders (Admin)
+- **Method:** GET
+- **Endpoint:** `/admin/orders`
+- **Authorization:** Bearer Token (Admin role required)
+
+**Expected Response:**
+- **Response Code:** 200 OK
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Orders array returned
+- ✅ Logs total orders count
+
+---
+
+#### 4. Update Order Status (Admin Endpoint)
+- **Method:** PATCH
+- **Endpoint:** `/admin/orders/:id/status`
+- **Authorization:** Bearer Token (Admin role required)
+- **Headers:** 
+  - Content-Type: application/json
+
+**Request Body:**
+```json
+{
+    "status": "processing"
+}
+```
+
+**Valid Status Values:**
+- pending
+- processing
+- receiving
+- completed
+- cancelled
+
+**Expected Response:**
+- **Response Code:** 200 OK
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Status updated successfully
+- ✅ Logs new status
+
+---
+
+### 👤 USER ENDPOINTS
+
+#### 1. Get User Profile
+- **Method:** GET
+- **Endpoint:** `/user/profile`
+- **Authorization:** Bearer Token (User required)
+
+**Expected Response:**
+- **Response Code:** 200 OK
+
+**Response Body Example:**
+```json
+{
+    "id": 2,
+    "email": "user@techhub.com",
+    "name": "John Doe",
+    "role": "user",
+    "createdAt": "2026-01-15T00:00:00.000Z"
+}
+```
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Profile has user data (id, email, name)
+- ✅ Logs user name
+
+---
+
+#### 2. Get My Orders
+- **Method:** GET
+- **Endpoint:** `/user/orders`
+- **Authorization:** Bearer Token (User required)
+
+**Expected Response:**
+- **Response Code:** 200 OK
+
+**Response Body Example:**
+```json
+[
+    {
+        "id": 1,
+        "customerName": "John Doe",
+        "customerEmail": "user@techhub.com",
+        "totalAmount": 2599.98,
+        "status": "processing",
+        "createdAt": "2026-01-16T00:00:00.000Z"
+    }
+]
+```
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Orders array returned
+- ✅ Logs order count
+
+---
+
+#### 3. Update User Profile
+- **Method:** PATCH
+- **Endpoint:** `/user/profile`
+- **Authorization:** Bearer Token (User required)
+- **Headers:** 
+  - Content-Type: application/json
+
+**Request Body:**
+```json
+{
+    "name": "Updated Name"
+}
+```
+
+**Expected Response:**
+- **Response Code:** 200 OK
+
+**Tests Included:**
+- ✅ Status code is 200
+- ✅ Profile updated
+- ✅ Logs success message
+
+---
+
 ## 🧪 Running Tests
 
 ### Run All Tests
@@ -538,14 +850,39 @@ npm run start:dev
 ### Test Workflow
 Recommended order to run requests:
 
-1. **Register User** or **Login User** (get token)
+**Basic User Flow:**
+1. **Register User** or **Login User** (get user token)
 2. **Get All Products** (get product IDs)
-3. **Add to Cart**
-4. **Create Order** (checkout)
-5. **Login Admin** (for admin operations)
-6. **Update Order Status** to "receiving"
-7. **Login User** again
-8. **Receive Order** (mark as completed)
+3. **Get Product by ID** (test specific product)
+4. **Add to Cart** (with sessionId)
+5. **Get Cart** (view cart items)
+6. **Get Cart Total** (calculate total)
+7. **Update Cart Item** (change quantity)
+8. **Create Order** (checkout)
+9. **Get My Orders** (user's orders)
+10. **Get User Profile** (view profile)
+11. **Update User Profile** (change name)
+
+**Admin Flow:**
+1. **Login Admin** (get admin token)
+2. **Get Dashboard Stats** (view statistics)
+3. **Get All Users** (admin view)
+4. **Get All Orders** (admin view)
+5. **Create Product** (add new product)
+6. **Update Product** (modify product)
+7. **Update Order Status** (to "processing")
+8. **Update Order Status** (to "receiving")
+
+**Order Completion Flow:**
+1. **Login User** (get user token)
+2. **Receive Order** (mark as completed)
+
+**Cart Management Flow:**
+1. **Add to Cart** (multiple items)
+2. **Get Cart Total** (view total)
+3. **Update Cart Item** (adjust quantity)
+4. **Remove Cart Item** (delete one item)
+5. **Clear Cart** (remove all items)
 
 ---
 
@@ -557,15 +894,28 @@ Recommended order to run requests:
 | Login | POST | 200 | < 1000ms | ~260 bytes |
 | Get Profile | GET | 200 | < 300ms | ~150 bytes |
 | Get Products | GET | 200 | < 500ms | Varies |
+| Get Product by ID | GET | 200 | < 300ms | ~200 bytes |
 | Create Product | POST | 201 | < 500ms | ~200 bytes |
 | Update Product | PATCH | 200 | < 400ms | ~200 bytes |
 | Delete Product | DELETE | 200/204 | < 300ms | Minimal |
 | Add to Cart | POST | 201 | < 500ms | ~180 bytes |
 | Get Cart | GET | 200 | < 300ms | Varies |
+| Get Cart Total | GET | 200 | < 300ms | ~50 bytes |
+| Update Cart Item | PATCH | 200 | < 400ms | ~180 bytes |
+| Remove Cart Item | DELETE | 200 | < 300ms | ~80 bytes |
+| Clear Cart | DELETE | 200 | < 300ms | ~80 bytes |
 | Create Order | POST | 201 | < 800ms | ~450 bytes |
 | Get Orders | GET | 200 | < 400ms | Varies |
+| Get Order by ID | GET | 200 | < 300ms | ~400 bytes |
 | Update Status | PATCH | 200 | < 500ms | ~250 bytes |
 | Receive Order | PATCH | 200 | < 400ms | ~200 bytes |
+| Admin Dashboard | GET | 200 | < 400ms | ~200 bytes |
+| Admin Get Users | GET | 200 | < 400ms | Varies |
+| Admin Get Orders | GET | 200 | < 400ms | Varies |
+| Admin Update Status | PATCH | 200 | < 500ms | ~250 bytes |
+| User Profile | GET | 200 | < 300ms | ~150 bytes |
+| User Orders | GET | 200 | < 400ms | Varies |
+| User Update Profile | PATCH | 200 | < 400ms | ~150 bytes |
 
 ---
 
@@ -573,22 +923,35 @@ Recommended order to run requests:
 
 ### 1. Public Endpoints (No Auth Required)
 - GET /products
+- GET /products/:id
 - POST /auth/register
 - POST /auth/login
+- POST /cart
+- GET /cart
+- GET /cart/total
+- PATCH /cart/:id
+- DELETE /cart/:id
+- DELETE /cart
 
 ### 2. User Endpoints (Bearer Token Required)
 - GET /auth/profile
-- POST /cart
-- GET /cart
 - POST /orders
 - GET /orders
+- GET /orders/:id
 - PATCH /orders/:id/receive
+- GET /user/profile
+- GET /user/orders
+- PATCH /user/profile
 
 ### 3. Admin Endpoints (Admin Token Required)
 - POST /products
 - PATCH /products/:id
 - DELETE /products/:id
 - PATCH /orders/:id/status
+- GET /admin/dashboard/stats
+- GET /admin/users
+- GET /admin/orders
+- PATCH /admin/orders/:id/status
 
 ---
 
@@ -596,11 +959,13 @@ Recommended order to run requests:
 
 ### Collection Variables
 ```
-baseUrl = http://localhost:3001
+baseUrl = http://localhost:3000
 token = (auto-populated from login)
 productId = (auto-populated from product responses)
 orderId = (auto-populated from order responses)
 userId = (auto-populated from registration)
+cartItemId = (auto-populated from cart responses)
+sessionId = session-123-abc (default value)
 ```
 
 ### Using Variables in Requests

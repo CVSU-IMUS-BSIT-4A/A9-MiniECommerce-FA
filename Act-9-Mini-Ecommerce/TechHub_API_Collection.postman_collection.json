@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "a9-miniecommerce-collection",
 		"name": "TechHub E-Commerce API",
-		"description": "Complete API collection for TechHub E-Commerce platform with authentication, products, orders, cart management, and admin/user features",
+		"description": "Complete API collection for TechHub E-Commerce platform with authentication, products, orders, and cart management",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -29,16 +29,6 @@
 		{
 			"key": "orderId",
 			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "cartItemId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "sessionId",
-			"value": "session-123-abc",
 			"type": "string"
 		}
 	],
@@ -352,46 +342,6 @@
 					"response": []
 				},
 				{
-					"name": "Get Product by ID",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Product has required fields\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('id');",
-									"    pm.expect(jsonData).to.have.property('name');",
-									"    pm.expect(jsonData).to.have.property('price');",
-									"    pm.expect(jsonData).to.have.property('stock');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/products/{{productId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"products",
-								"{{productId}}"
-							]
-						},
-						"description": "**Get a specific product by ID**\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** None (Public endpoint)\n\n**URL Parameters:**\n- productId: ID of the product to retrieve"
-					},
-					"response": []
-				},
-				{
 					"name": "Create Product (Admin)",
 					"event": [
 						{
@@ -579,12 +529,6 @@
 									"    pm.expect(jsonData).to.have.property('quantity');",
 									"});",
 									"",
-									"// Save cart item ID",
-									"if (pm.response.code === 201) {",
-									"    var jsonData = pm.response.json();",
-									"    pm.collectionVariables.set(\"cartItemId\", jsonData.id);",
-									"}",
-									"",
 									"pm.test(\"Response time is fast\", function () {",
 									"    pm.expect(pm.response.responseTime).to.be.below(500);",
 									"});"
@@ -594,16 +538,26 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"productId\": {{productId}},\n    \"quantity\": 2,\n    \"sessionId\": \"{{sessionId}}\"\n}"
+							"raw": "{\n    \"productId\": {{productId}},\n    \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{baseUrl}}/cart",
@@ -614,7 +568,7 @@
 								"cart"
 							]
 						},
-						"description": "**Add product to cart**\n\n**Expected Response Code:** 201 Created\n\n**Body Parameters:**\n- productId: ID of product\n- quantity: Number of items\n- sessionId: Session identifier"
+						"description": "**Add product to cart**\n\n**Expected Response Code:** 201 Created\n\n**Authorization:** Bearer Token (User required)\n\n**Body Parameters:**\n- productId: ID of product\n- quantity: Number of items"
 					},
 					"response": []
 				},
@@ -639,200 +593,32 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/cart?sessionId={{sessionId}}",
+							"raw": "{{baseUrl}}/cart",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"cart"
-							],
-							"query": [
-								{
-									"key": "sessionId",
-									"value": "{{sessionId}}"
-								}
 							]
 						},
-						"description": "**Get cart items**\n\n**Expected Response Code:** 200 OK\n\n**Query Parameters:**\n- sessionId: Session identifier (optional)"
-					},
-					"response": []
-				},
-				{
-					"name": "Get Cart Total",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Total is returned\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('total');",
-									"    pm.expect(jsonData.total).to.be.a('number');",
-									"});",
-									"",
-									"console.log(\"Cart Total: ₱\" + pm.response.json().total);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/cart/total?sessionId={{sessionId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"cart",
-								"total"
-							],
-							"query": [
-								{
-									"key": "sessionId",
-									"value": "{{sessionId}}"
-								}
-							]
-						},
-						"description": "**Calculate cart total amount**\n\n**Expected Response Code:** 200 OK\n\n**Returns:**\n- total: Sum of all cart items (price × quantity)"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Cart Item",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Quantity updated\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('quantity');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"quantity\": 5\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/cart/{{cartItemId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"cart",
-								"{{cartItemId}}"
-							]
-						},
-						"description": "**Update cart item quantity**\n\n**Method:** PATCH\n\n**Expected Response Code:** 200 OK\n\n**URL Parameters:**\n- cartItemId: ID of cart item to update\n\n**Body:**\n```json\n{\n    \"quantity\": 5\n}\n```"
-					},
-					"response": []
-				},
-				{
-					"name": "Remove Cart Item",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Item removed\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('message');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/cart/{{cartItemId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"cart",
-								"{{cartItemId}}"
-							]
-						},
-						"description": "**Remove item from cart**\n\n**Method:** DELETE\n\n**Expected Response Code:** 200 OK\n\n**URL Parameters:**\n- cartItemId: ID of cart item to remove"
-					},
-					"response": []
-				},
-				{
-					"name": "Clear Cart",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Cart cleared\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('message');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/cart?sessionId={{sessionId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"cart"
-							],
-							"query": [
-								{
-									"key": "sessionId",
-									"value": "{{sessionId}}"
-								}
-							]
-						},
-						"description": "**Clear entire cart**\n\n**Method:** DELETE\n\n**Expected Response Code:** 200 OK\n\n**Query Parameters:**\n- sessionId: Session ID of cart to clear"
+						"description": "**Get user's cart items**\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** Bearer Token"
 					},
 					"response": []
 				}
-			],
-			"description": "Shopping cart management endpoints"
+			]
 		},
 		{
 			"name": "Orders",
@@ -1113,384 +899,6 @@
 				}
 			],
 			"description": "Order management endpoints"
-		},
-		{
-			"name": "Admin",
-			"item": [
-				{
-					"name": "Get Dashboard Stats",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Has dashboard statistics\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('object');",
-									"});",
-									"",
-									"console.log(\"Dashboard Stats: \", JSON.stringify(pm.response.json(), null, 2));"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/dashboard/stats",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"dashboard",
-								"stats"
-							]
-						},
-						"description": "**Get admin dashboard statistics**\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** Bearer Token (Admin role required)\n\n**Returns:**\n- Total users\n- Total orders\n- Total revenue\n- Other statistics"
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Users",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Users array returned\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"});",
-									"",
-									"console.log(\"Total Users: \" + pm.response.json().length);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/users",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"users"
-							]
-						},
-						"description": "**Get all users (Admin only)**\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** Bearer Token (Admin role required)\n\n**Returns:**\n- Array of all users with their details"
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Orders (Admin)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Orders array returned\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"});",
-									"",
-									"console.log(\"Total Orders (Admin): \" + pm.response.json().length);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/orders",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"orders"
-							]
-						},
-						"description": "**Get all orders through admin endpoint**\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** Bearer Token (Admin role required)\n\n**Returns:**\n- Complete list of all orders in the system"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Order Status (Admin Endpoint)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Status updated successfully\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('status');",
-									"});",
-									"",
-									"console.log(\"Order status updated to: \" + pm.response.json().status);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"status\": \"processing\"\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/admin/orders/{{orderId}}/status",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"orders",
-								"{{orderId}}",
-								"status"
-							]
-						},
-						"description": "**Update order status via admin endpoint**\n\n**Method:** PATCH\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** Bearer Token (Admin role required)\n\n**Valid Status Values:**\n- pending\n- processing\n- receiving\n- completed\n- cancelled"
-					},
-					"response": []
-				}
-			],
-			"description": "Admin-only endpoints for managing users, orders, and dashboard"
-		},
-		{
-			"name": "User",
-			"item": [
-				{
-					"name": "Get User Profile",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Profile has user data\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('id');",
-									"    pm.expect(jsonData).to.have.property('email');",
-									"    pm.expect(jsonData).to.have.property('name');",
-									"});",
-									"",
-									"console.log(\"User: \" + pm.response.json().name);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/user/profile",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"user",
-								"profile"
-							]
-						},
-						"description": "**Get logged-in user profile**\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** Bearer Token (User required)\n\n**Returns:**\n- User's profile information"
-					},
-					"response": []
-				},
-				{
-					"name": "Get My Orders",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Orders array returned\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"});",
-									"",
-									"console.log(\"My Orders: \" + pm.response.json().length);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/user/orders",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"user",
-								"orders"
-							]
-						},
-						"description": "**Get current user's orders**\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** Bearer Token (User required)\n\n**Returns:**\n- Array of orders belonging to the authenticated user"
-					},
-					"response": []
-				},
-				{
-					"name": "Update User Profile",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Profile updated\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('id');",
-									"});",
-									"",
-									"console.log(\"Profile updated successfully\");"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Updated Name\"\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/user/profile",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"user",
-								"profile"
-							]
-						},
-						"description": "**Update user profile**\n\n**Method:** PATCH\n\n**Expected Response Code:** 200 OK\n\n**Authorization:** Bearer Token (User required)\n\n**Body:**\n```json\n{\n    \"name\": \"Updated Name\"\n}\n```"
-					},
-					"response": []
-				}
-			],
-			"description": "User-specific endpoints for profile and order management"
 		}
 	]
 }
